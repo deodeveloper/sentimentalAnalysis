@@ -1,0 +1,157 @@
+Twitter Sentiment Analytics using R
+In an earlier chapter, we saw how to perform Twitter sentiment analytics using Hive and Hadoop. In this recipe, we are going to take a look at how to do this using R.
+
+Getting ready
+To perform this recipe, you should have R installed on your machine. You should also have a Twitter account and an application that has an API key, API secret, Access Token, and an Access Secret with you so that you can receive tweets in real time.
+
+How to do it...
+To get started, first of all, we need to install certain R packages, which will be required in this recipe. The following are the commands:
+
+>install.packages("twitteR")
+>install.packages("plyr")
+>install.packages("stringr")
+>install.packages(c("devtools", "rjson", "bit64", "httr"))
+Once the installation is complete, load the following packages:
+
+>library(devtools)
+>library(twitteR)
+Next, we need to provide the keys provided that are by Twitter on its application page, as follows:
+
+>api_key <-  "XXXXXX"
+>api_secret <- "XXXXXX"
+>access_token <- "XXXXXX"
+>access_secret <- "XXXXXXX"
+>ssetup_twitter_oauth(api_key, api_secret, access_token, access_secret)
+Here, instead of XXXX, add your own keys.
+
+If the keys that are provided by you are correct, you will not see any errors. If there are any missing keys, you will see an appropriate error message.
+
+Next, we need some dictionary words, which are segregated as positive or negative, in order to determine the sentiment of each tweet. So, we download a list of words from http://www.cs.uic.edu/~liub/FBS/opinion-lexicon-English.rar and store them in a certain place. Download, extract, and save these files.
+
+Then, we load these lists of words into objects, as shown here:
+
+>pos.from.file = scan('H:/opinion-lexicon-English/positive-words.txt',what='character', comment.char=';')
+>neg.from.file = scan('H:/opinion-lexicon-English/negative-words.txt',what='character', comment.char=';')
+We also remove the comments that are labelled as headers in the text files.
+
+We can also add some more words if they are not already part of the given files, as shown here:
+
+>pos.words = c(pos.from.file,'upgrade', 'love','achievement','impressed')
+>neg.words = c( neg.from.file, 'wtf', 'wait', 'waiting','hate', 'die')
+Now, we are going to download the tweets using the searchTwitter method of the TwitterR package:
+
+hadoop.tweets = searchTwitter('#hadoop', n=1000)
+The preceding command will download 1,000 tweets with the hadoop hash tag and save it as the hadoop.tweets object.
+
+You can check whether the data is imported properly:
+
+> hadoop.tweets
+[[1]]
+[1] "bviallet: RT @IBMAnalytics: See how the video game industry is using analytics to create happy customers: https://t.co/LcyTEFqUrT #Hadoop https://t.c…"
+
+[[2]]
+[1] "sheltonmkagande: RT @SAS_Cares: Learn five ways #SAS gets to data in #hadoop https://t.co/yMsXTVw7Dd #SASusers"
+
+[[3]]
+[1] "thinkittraining: Secondary Indexing for MapR-DB using Elasticsearch @https://www.mapr.com/blog #Hadoop #Mapr #training"
+
+[[4]]
+[1] "BigDataTweetBot: RT @andnegr: https://t.co/Yd87vicDlz @SASitaly #BigData #Hadoop @ClouderaITA"
+
+[[5]]
+[1] "BigDataTweetBot: RT @techjunkiejh: Is Apache #Hadoop the only option to implement #BigData ? https://t.co/b4z7ZSHTiJ https://t.co/mGRFXqS6Dx"
+
+[[6]]
+[1] "shakamunyi: RT @andnegr: https://t.co/Yd87vicDlz @SASitaly #BigData #Hadoop @ClouderaITA"
+
+[[7]]
+[1] "shakamunyi: RT @techjunkiejh: Is Apache #Hadoop the only option to implement #BigData ? https://t.co/b4z7ZSHTiJ https://t.co/mGRFXqS6Dx"
+
+[[8]]
+[1] "andnegr: https://t.co/Yd87vicDlz @SASitaly #BigData #Hadoop @ClouderaITA"
+
+[[9]]
+[1] "techjunkiejh: Is Apache #Hadoop the only option to implement #BigData ? https://t.co/b4z7ZSHTiJ https://t.co/mGRFXqS6Dx"
+
+[[10]]
+[1] "gitsacademy: #fact of the day\n#Hadoop was created by Doug Cutting (while at #Yahoo) and named it after his son's elephant https://t.co/RUnDJzSpml"
+Now, we want only the tweet text from the preceding data, so we execute the following command:
+
+>hadoop.text = laply(hadoop.tweets, function(t) t$getText() )
+We will be writing one algorithm that takes each tweet and then computes how many positive and negative words it has. It will give a score based on the sentiment of the overall tweet:
+
+score.sentiment = function(sentences, pos.words, neg.words, .progress='none')
+{
+require(plyr)
+require(stringr)
+
+#Get vectors from the list
+scores = laply(sentences, function(sentence, pos.words, neg.words) {
+
+# clean up sentences, remove punctuations etc.
+sentence = gsub('[[:punct:]]', '', sentence)
+sentence = gsub('[[:cntrl:]]', '', sentence)
+sentence = gsub('\\d+', '', sentence)
+# and convert to lower case:
+sentence = tolower(sentence)
+
+# split into words. 
+word.list = str_split(sentence, '\\s+')
+words = unlist(word.list)
+
+# compare our words to the dictionaries of positive & negative terms
+pos.matches = match(words, pos.words)
+neg.matches = match(words, neg.words)
+
+# match() returns the position of the matched term or NA
+# we just want a TRUE/FALSE so we remove all NA
+pos.matches = !is.na(pos.matches)
+neg.matches = !is.na(neg.matches)
+
+# and conveniently enough, TRUE/FALSE will be treated as 1/0 by sum():
+score = sum(pos.matches) - sum(neg.matches)
+
+return(score)
+}, pos.words, neg.words, .progress=.progress )
+
+scores.df = data.frame(score=scores, text=sentences)
+return(scores.df)
+}
+We can test this algorithm by using some sample text, as shown here:
+
+> sample = c("You're awesome and I love you",
+"I hate and hate and hate. So angry. Die!",
+"Impressed and amazed: you are peerless in your
+achievement of unparalleled mediocrity.")
+
+> result = score.sentiment(sample, pos.words, neg.words)
+Now, we can see the results:
+
+> result
+  score                                                    text
+1     2                                                           You're awesome and I love you
+2    -5                                                I hate and hate and hate. So angry. Die!
+3     3 Impressed and amazed: you are peerless in your\nachievement of unparalleled mediocrity.
+This means that our algorithm works, so we will test on real Twitter data now:
+
+>hadoop.scores = score.sentiment(hadoop.text, pos.words, neg.words, .progress='text')
+Here are the results:
+
+>  hadoop.scores
+   score                                                                                                                                         text
+1      1 RT @IBMAnalytics: See how the video game industry is using analytics to create happy customers: https://t.co/LcyTEFqUrT #Hadoop https://t.c…
+2      0                                                RT @SAS_Cares: Learn five ways #SAS gets to data in #hadoop https://t.co/yMsXTVw7Dd #SASusers
+3      0                                        Secondary Indexing for MapR-DB using Elasticsearch @https://www.mapr.com/blog #Hadoop #Mapr #training
+4      0                                                                 RT @andnegr: https://t.co/Yd87vicDlz @SASitaly #BigData #Hadoop @ClouderaITA
+5      0                  RT @techjunkiejh: Is Apache #Hadoop the only option to implement #BigData ? https://t.co/b4z7ZSHTiJ https://t.co/mGRFXqS6Dx
+6      0                                                                 RT @andnegr: https://t.co/Yd87vicDlz @SASitaly #BigData #Hadoop @ClouderaITA
+7      0                  RT @techjunkiejh: Is Apache #Hadoop the only option to implement #BigData ? https://t.co/b4z7ZSHTiJ https://t.co/mGRFXqS6Dx
+8      0                                                                              https://t.co/Yd87vicDlz @SASitaly #BigData #Hadoop @ClouderaITA
+9      0                                    Is Apache #Hadoop the only option to implement #BigData ? https://t.co/b4z7ZSHTiJ https://t.co/mGRFXqS6Dx
+10     0        #fact of the day\n#Hadoop was created by Doug Cutting (while at #Yahoo) and named it after his son's elephant https://t.co/RUnDJzSpml
+This way, you can perform sentiment analytics for any kind of Twitter data.
+
+How it works...
+Our sentiment analysis algorithm is very simple. We first get the sentence, break it into words, remove any punctuation, and so on. Later, we compare each word with a predefined list of positive and negative words. Next, we subtract the number of negative words from the number of positive words and get the score. If the score is a positive number, then it means that the sentiment of the tweet is positive, and if the score is negative, it means that the tweet is negative. If the score is zero, this means that it is a neutral tweet.
+
+This algorithm can be extended further to understand sarcasm.
