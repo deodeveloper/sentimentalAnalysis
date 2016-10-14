@@ -1,8 +1,8 @@
-TRACK_TERMS = "stock >:]#stock :-)#stock :)#stock :o)#stock :]#stock :3#stock :c)#stock :>#stock =]#stock 8)#stock =)#stock :}#stock :^)#stock"
+TRACK_TERMS = "$SSNLF"
 SEPARATOR = "#"
 LANGUAGE = ["en"]
 # CONNECTION_STRING = "mysql://root:@localhost/twitter"
-CONNECTION_STRING = "sqlite:////Users/admin/Documents/Development/python/sentimentalAnalysis/sqllite/tweets.db"
+CONNECTION_STRING = "sqlite:///C:/Users/Satya/Documents/GitHub/sentimentalAnalysis/sqllite/samsung.db"
 CSV_NAME = "tweets.csv"
 TABLE_NAME = "tweet"
 TWITTER_APP_KEY = "QdjZPGYPwd99r72qQfyZyZEcO"
