@@ -4,7 +4,7 @@ LANGUAGE = ["en"]
 # CONNECTION_STRING = "mysql://root:@localhost/twitter"
 #uncomment this for windows machine
 #CONNECTION_STRING = "sqlite:///C:/Users/Satya/Documents/GitHub/sentimentalAnalysis/sqllite/samsung.db"
-CONNECTION_STRING = "sqlite:////Users/admin/Documents/Development/python/sentimentalAnalysis/sqllite/tweets.db"
+CONNECTION_STRING = "sqlite:////Users/admin/Documents/Development/python/sentimentalAnalysis/outputDir/tweets.db"
 CSV_NAME = "tweets.csv"
 TABLE_NAME = "tweet"
 TWITTER_APP_KEY = "QdjZPGYPwd99r72qQfyZyZEcO"

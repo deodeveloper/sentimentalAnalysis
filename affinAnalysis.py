@@ -1,10 +1,14 @@
 import math
 import sys
 import nltk
+import settings
+import dataset
+
 nltk.data.path.append('./nltk_data/')
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
 
 filenameAFINN = 'AFINN/AFINN-111.txt'
 afinn = dict(map(lambda (w, s): (w, int(s)), [
@@ -28,3 +32,11 @@ if __name__ == '__main__':
     # No negation and booster words handled in this approach
     text = "But he is awesome. He is pretty too. I love him"
     print("%6.2f %s" % (sentiment(text), text))
+
+    db = dataset.connect(settings.CONNECTION_STRING)
+    result = db.query('SELECT id, text FROM tweet')
+    table = db[settings.TABLE_NAME]
+    for row in result:
+        text = row['text']
+        score = sentiment(text)
+        table.update(dict(id=row['id'], afinnScore=score), ['id'])
