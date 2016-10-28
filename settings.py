@@ -1,8 +1,9 @@
-TRACK_TERMS = "stock >:]#stock :-)#stock :)#stock :o)#stock :]#stock :3#stock :c)#stock :>#stock =]#stock 8)#stock =)#stock :}#stock :^)#stock"
+TRACK_TERMS = "stock"
 SEPARATOR = "#"
 LANGUAGE = ["en"]
 # CONNECTION_STRING = "mysql://root:@localhost/twitter"
-CONNECTION_STRING = "sqlite:///C:/Users/Satya/Documents/GitHub/sentimentalAnalysis/sqllite/samsung.db"
+#uncomment this for windows machine
+#CONNECTION_STRING = "sqlite:///C:/Users/Satya/Documents/GitHub/sentimentalAnalysis/sqllite/samsung.db"
 CONNECTION_STRING = "sqlite:////Users/admin/Documents/Development/python/sentimentalAnalysis/sqllite/tweets.db"
 CSV_NAME = "tweets.csv"
 TABLE_NAME = "tweet"

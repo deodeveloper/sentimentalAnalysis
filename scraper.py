@@ -5,6 +5,17 @@ from textblob import TextBlob
 from sqlalchemy.exc import ProgrammingError
 import json
 
+import nltk
+from nltk.stem import PorterStemmer, WordNetLemmatizer
+nltk.data.path.append('./nltk_data/')
+stemmer = PorterStemmer()
+lemmatiser = WordNetLemmatizer()
+
+def lemmatize( text ):
+   return lemmatiser.lemmatize(text, pos="v");
+
+
+
 db = dataset.connect(settings.CONNECTION_STRING)
 
 class StreamListener(tweepy.StreamListener):
