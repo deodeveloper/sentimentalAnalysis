@@ -25,14 +25,6 @@ def sentiment(text):
 
 
 if __name__ == '__main__':
-    # Single sentence example:
-    text = "Finn is stupid and idiotic"
-    print("%6.2f %s" % (sentiment(text), text))
-
-    # No negation and booster words handled in this approach
-    text = "But he is awesome. He is pretty too. I love him"
-    print("%6.2f %s" % (sentiment(text), text))
-
     db = dataset.connect(settings.CONNECTION_STRING)
     result = db.query('SELECT id, text FROM tweet')
     table = db[settings.TABLE_NAME]
